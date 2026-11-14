@@ -3,13 +3,13 @@ import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
-# Logging
+# Logging ayarı
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# Token'ı Render'da Environment Variable olarak gireceğiz
 TOKEN = os.getenv("BOT_TOKEN")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -50,12 +50,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("Favori takım özelliği yakında aktif olacak.")
 
 def main():
+    if not TOKEN:
+        raise ValueError("BOT_TOKEN bulunamadı! Render Environment kısmını kontrol et.")
+
     application = Application.builder().token(TOKEN).build()
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(button_handler))
 
-    application.run_polling()
+    # Render için en stabil yöntem
+    application.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
